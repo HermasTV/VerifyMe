@@ -1,17 +1,18 @@
-import cv2
+from cv2 import cv2
 import numpy as np
 from PIL import Image
-import easyocr
+import os
+#for arabic encoding
 # -*- coding: utf-8 -*-
 
 class PreProcess :
 
     def __init__(self):
-        self.template = './utils/front.jpg'
+        self.template = os.path.join(os.path.dirname(__file__),'utils/front.jpg')
 
     def crop_id(self,img):
         img1 = cv2.imread(self.template,cv2.IMREAD_GRAYSCALE)
-        img2 = cv2.imread(img,cv2.IMREAD_GRAYSCALE)
+        img2 = img.copy()
         # Initiate SIFT detector
         orb = cv2.SIFT_create()
         # find the keypoints and descriptors with ORB
@@ -50,6 +51,7 @@ class PreProcess :
         res = cv2.warpPerspective(img2,M,(width,height))
         cv2.imwrite('logs/cropped.jpg',res)
         return res 
+
     def extract(self,front):
         """
         @Input  : image, (part := integer)
@@ -67,8 +69,8 @@ class PreProcess :
         h = 5.5
 
         # init. card area parameters
-        scaled_h = int(front.shape[0])
-        scaled_w = int(front.shape[1])
+        scaled_h = int(front.shape[0] *h )
+        scaled_w = int(front.shape[1] *w )
 
         card_f = front
         card_f = cv2.resize(card_f, (scaled_w, scaled_h))
@@ -94,25 +96,24 @@ class PreProcess :
         serial = card_f[int(0.9 * card_f.shape[0]): card_f.shape[0] - 10,
                         int(0.05 * card_f.shape[1]): int(0.4 *card_f.shape[1] - 10)]
 
-        cv2.imwrite('logs/face.jpg',face)
-        cv2.imwrite('logs/first_name.jpg',first_name)
-        cv2.imwrite('logs/last_name.jpg',last_name)
-        cv2.imwrite('logs/address_line1.jpg',address_line1)
-        cv2.imwrite('logs/address_line2.jpg',address_line2)
-        cv2.imwrite('logs/id_num.jpg',id_num)
-        cv2.imwrite('logs/serial.jpg',serial)
+        # cv2.imwrite('logs/face.jpg',face)
+        # cv2.imwrite('logs/first_name.jpg',first_name)
+        # cv2.imwrite('logs/last_name.jpg',last_name)
+        # cv2.imwrite('logs/address_line1.jpg',address_line1)
+        # cv2.imwrite('logs/address_line2.jpg',address_line2)
+        # cv2.imwrite('logs/id_num.jpg',id_num)
+        # cv2.imwrite('logs/serial.jpg',serial)
 
-        return dict(face = face,
-                    name = first_name,
+        return dict(name = first_name,
                     family_name = last_name,
                     address_line_one = address_line1,
-                    address_line_two = address_line2,
-                    idno = id_num,
-                    serial = serial)
-    
-        
+                    address_line_two = address_line2
+                    )
+ 
 
 if __name__ == "__main__":
+    import easyocr
+
     reader = easyocr.Reader(['ar'],gpu=False,)
     imagePath = 'utils/test2.jpg'
     extractor = PreProcess()
