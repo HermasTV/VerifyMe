@@ -111,15 +111,15 @@ class PreProcess :
                     )
  
 
-if __name__ == "__main__":
-    import easyocr
+# if __name__ == "__main__":
+#     import easyocr
 
-    reader = easyocr.Reader(['ar'],gpu=False,)
-    imagePath = 'utils/test2.jpg'
-    extractor = PreProcess()
-    cropped = extractor.crop_id(imagePath)
-    fields = extractor.extract(cropped)
-    for field in fields.values():
-        results = reader.readtext(field,detail=0)
-        for result in results:
-            print(result)
+#     reader = easyocr.Reader(['ar'],gpu=False,)
+#     imagePath = 'utils/test2.jpg'
+#     extractor = PreProcess()
+#     cropped = extractor.crop_id(imagePath)
+#     fields = extractor.extract(cropped)
+#     for field in fields.values():
+#         results = reader.readtext(field,detail=0)
+#         for result in results:
+#             print(result)

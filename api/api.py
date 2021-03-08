@@ -18,6 +18,7 @@ async def root():
 
 @app.post("/generate")
 async def generate():
+
     pass
 
 @app.post("/upload_id")
@@ -61,9 +62,10 @@ async def match(id: UploadFile = File(...),selfie: UploadFile = File(...)):
 
 @app.post("/action")
 async def action():
+    #cool
     pass
 
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 
-#     uvicorn.run(app, host='127.0.0.1', port=8000)
+    uvicorn.run("api:app", host='0.0.0.0', port=8000)

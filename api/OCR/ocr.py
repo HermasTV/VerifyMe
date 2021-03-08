@@ -1,6 +1,5 @@
 from cv2 import cv2
 from PIL import Image
-import pytesseract
 import easyocr
 from .preprocessing import PreProcess
 from traceback import print_exc
