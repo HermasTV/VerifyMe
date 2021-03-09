@@ -3,17 +3,19 @@ version: '3'
 services:
   app:
     image: verifyme_app
-    build: app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
     ports:
       - 8501:8501
-    depends_on:
-      - api
+    # depends_on:
+    #   - api
     volumes: 
       - ./app:/app
-  api:
-    image: verifyme_api
-    build: api
-    ports:
-      - 8000:8000
-    volumes: 
-      - ./api:/api
+  # api:
+  #   image: verifyme_api
+  #   build: api
+  #   ports:
+  #     - 8000:8000
+  #   volumes: 
+  #     - ./api:/app

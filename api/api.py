@@ -7,10 +7,9 @@ from OCR.ocr import OCR
 from FaceMatch.match import Matcher
 
 app = FastAPI()
+
 ocr = OCR()
 matcher = Matcher()
-
-
 
 @app.get("/")
 async def root():
@@ -62,7 +61,7 @@ async def match(id: UploadFile = File(...),selfie: UploadFile = File(...)):
 
 @app.post("/action")
 async def action():
-    #cool
+    
     pass
 
 

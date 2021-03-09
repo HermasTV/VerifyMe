@@ -1,24 +1,19 @@
 import requests
 import streamlit as st
-from PIL import Image
+from pages import match,ocr
+from streamlit import caching
 
-# https://discuss.streamlit.io/t/version-0-64-0-deprecation-warning-for-st-file-uploader-decoding/4465
-st.set_option("deprecation.showfileUploaderEncoding", False)
 
-# defines an h1 header
-st.title("face Matching app ")
 
-# displays a file uploader widget
-img1 = st.file_uploader("Choose ID image")
-img2 = st.file_uploader("Choose selfie Image")
+# create your radio button with the index that we loaded
+choice = st.sidebar.radio("go to",('home','ocr', 'match', 'action'))
 
-#fffff
-# displays a button
-if st.button("match"):
-    if img1 is not None and img2 is not None:
-        files = {"id": img1.getvalue(),
-                 "selfie":img2.getvalue()}
-        res = requests.post(f"http://api:8000/match", files=files)
-        res = res.json()
-        result = res['result']
-        st.text(result)
+# finally get to whats on each page
+if choice == 'home':
+    st.write("Home Page")
+elif choice == 'ocr':
+    ocr.app()
+elif choice == 'match':
+    match.app()
+elif choice == 'action':
+    st.write("Action Page")
