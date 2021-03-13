@@ -5,11 +5,15 @@ import numpy as np
 from cv2 import cv2
 from OCR.ocr import OCR
 from FaceMatch.match import Matcher
+from ActionRecognition.smile import Smile
 
+#initialize fastapi instance 
 app = FastAPI()
-
+#initialize core models
 ocr = OCR()
 matcher = Matcher()
+smile = Smile()
+
 
 @app.get("/")
 async def root():
@@ -60,9 +64,19 @@ async def match(id: UploadFile = File(...),selfie: UploadFile = File(...)):
     return {'result' : result}
 
 @app.post("/action")
-async def action():
-    
-    pass
+async def action(img: UploadFile = File(...)):
+    img_data = await img.read()
+    img_arr = np.fromstring(img_data, np.uint8)
+    imgcv = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
+
+    result = smile.detector(image=imgcv)
+
+    if result :
+        result = "Smile Detected"
+    else : 
+        result = "No smile or no Face"
+
+    return {'result' : result}
 
 
 if __name__ == '__main__':
