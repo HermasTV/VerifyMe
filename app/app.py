@@ -1,6 +1,6 @@
 import requests
 import streamlit as st
-from pages import match,ocr
+from pages import match,ocr,smile
 from streamlit import caching
 
 
@@ -16,4 +16,5 @@ elif choice == 'ocr':
 elif choice == 'match':
     match.app()
 elif choice == 'action':
+    smile.app()
     st.write("Action Page")

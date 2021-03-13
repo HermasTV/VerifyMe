@@ -8,7 +8,7 @@ def app():
     st.set_option("deprecation.showfileUploaderEncoding", False)
 
     # defines an h1 header
-    st.title("match")
+    st.title("Face Matching")
 
     # displays a file uploader widget
     img1 = st.file_uploader("Choose ID image")
