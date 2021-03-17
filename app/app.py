@@ -1,8 +1,9 @@
 import requests
 import streamlit as st
-from pages import match,ocr,smile
 from streamlit import caching
 
+
+from pages import match,ocr,smile
 
 
 # create your radio button with the index that we loaded
