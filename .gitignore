@@ -4,3 +4,4 @@ __pycache__/
 api/OCR/logs/
 api/OCR/__pycache__/
 DataBase.db
+.*ipynb
