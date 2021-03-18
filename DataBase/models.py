@@ -14,5 +14,6 @@ class User(Base):
     first_name = Column(String, default="")
     last_name = Column(String, default="")
     address = Column(String, default="")
+    city = Column(String, default="")
     match = Column(Boolean, default=False)
-    smile =Column(Boolean, default=False)
+    action =Column(Boolean, default=False)

@@ -2,6 +2,7 @@ import uvicorn
 import secrets
 import numpy as np
 from cv2 import cv2
+from typing import List
 
 from fastapi import FastAPI,Form,File,UploadFile,Depends
 from sqlalchemy.orm import Session
@@ -33,24 +34,31 @@ smile = Smile()
 #postgres Database
 DATABASE_URL = 'postgresql'
 
-
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
-@app.post("/generate",response_model=schemas.User)
+@app.post("/generate",response_model=schemas.UserCreate)
 async def generate(username:str, email:str, db: Session = Depends(get_db)):
     token = secrets.token_urlsafe(10)
     
     return crud.create_user(db=db,username=username,email=email,token=token)
 
-@app.post("/upload_id")
-async def uploadID():
+@app.get("/users",response_model=List[schemas.User])
+async def get_users(db: Session = Depends(get_db)):
     
-    return None
+    return crud.get_users(db=db)
 
-@app.post("/ocr")
-async def id_ocr(id: UploadFile = File(...)):
+@app.get("/userToken",response_model=schemas.User)
+async def get_user_by_token(token:str,db: Session = Depends(get_db)):
+    
+    return crud.get_user_by_token(db=db,token=token)
+
+@app.post("/ocr",response_model=schemas.User)
+async def id_ocr(token:str,
+                id: UploadFile = File(...),
+                db: Session = Depends(get_db)):
+
     #load the Image
     contents = await id.read()
     nparr = np.fromstring(contents, np.uint8)
@@ -59,11 +67,19 @@ async def id_ocr(id: UploadFile = File(...)):
 
     #pass pass to the OCR module
     result = ocr.recognize(img)
-    print(result)
-    return result
+    user = crud.update_ocr(db=db,token=token,
+                    first_name=result['name'],
+                    last_name=result['family_name'],
+                    address=result['address_line_one'],
+                    city=result['address_line_two'])
 
-@app.post("/match")
-async def match(id: UploadFile = File(...),selfie: UploadFile = File(...)):
+    return user
+
+@app.post("/match",response_model=schemas.UpdateMatch)
+async def match(token:str,
+                id: UploadFile = File(...),
+                selfie: UploadFile = File(...),
+                db: Session = Depends(get_db)):
 
     id_data = await id.read()
     selfie_data = await selfie.read()
@@ -75,28 +91,21 @@ async def match(id: UploadFile = File(...),selfie: UploadFile = File(...)):
     selfie_img = cv2.imdecode(selfie_arr, cv2.IMREAD_COLOR)
 
     result = matcher.match(id_card=id_img,selfie=selfie_img)[0]
-    print(result)
-    if result :
-        result = "Matched"
-    else : 
-        result = "Not Matched"
+ 
+    return crud.update_match(db=db,token=token,match=result)
 
-    return {'result' : result}
+@app.post("/action",response_model=schemas.UpdateAction)
+async def action(token:str,
+                 img: UploadFile = File(...),
+                 db: Session = Depends(get_db)):
 
-@app.post("/action")
-async def action(img: UploadFile = File(...)):
     img_data = await img.read()
     img_arr = np.fromstring(img_data, np.uint8)
     imgcv = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
 
     result = smile.detector(image=imgcv)
 
-    if result :
-        result = "Smile Detected"
-    else : 
-        result = "No smile or no Face"
-
-    return {'result' : result}
+    return crud.update_action(db=db,token=token,action=result)
 
 
 if __name__ == '__main__':

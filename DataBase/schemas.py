@@ -2,39 +2,43 @@ from typing import List, Optional
 from pydantic import BaseModel
 
 
-class User(BaseModel):
-
+class UserBase(BaseModel):
+    id: int
     token: str
+
+class UserCreate(UserBase):
     username:str
     email: str
-    id: int
-    first_name:Optional[str]=""
-    last_name:Optional[str]=""
-    address: Optional[str]=""
-    match: Optional[bool] = False
-    smile: Optional[bool] = False
-
     class Config:
         orm_mode = True
 
+class UpdateAction(UserBase):
+    action: bool
+    class Config:
+        orm_mode = True
 
-# class UserBase(BaseModel):
-#     username:str
-#     email: str
+class UpdateMatch(BaseModel):
+    match:bool
+    class Config:
+        orm_mode = True
 
+class UpdateOCR(UserBase):
+    first_name:str
+    last_name:str
+    address:str
+    city:str
+    class Config:
+        orm_mode = True
 
-# class UserCreate(UserBase):
-#     token: str
+class User(UserCreate):
+    
+    first_name:str
+    last_name:str
+    address:str
+    city:str
+    match:bool
+    action: bool
 
-
-# class User(UserBase):
-#     id: int
-#     first_name:str
-#     last_name:str
-#     address:str
-#     match:bool
-#     smile: bool
-
-#     class Config:
-#         orm_mode = True
+    class Config:
+        orm_mode = True
 
