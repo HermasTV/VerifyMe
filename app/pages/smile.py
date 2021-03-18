@@ -10,12 +10,14 @@ def app(result=None):
     st.title("Smile recognition")
 
     # displays a file uploader widget
+    token = st.text_input("Enter the session Token","")
     img = st.file_uploader("upload a selfie with a smile")
 
     if st.button("detect"):
         if img is not None:
+            data = {'token':token}
             files = {"img": img.getvalue()}
             #res = requests.post(f"http://api:8000/match", files=files) #for the docker version
-            res = requests.post(f"http://localhost:8000/action", files=files)
+            res = requests.post(f"http://localhost:8000/action",data=data, files=files)
             res = res.json()
             st.write(res)

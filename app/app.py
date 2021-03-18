@@ -3,7 +3,7 @@ import streamlit as st
 from streamlit import caching
 
 
-from pages import match,ocr,smile
+from pages import match,ocr,smile,generate
 
 
 # create your radio button with the index that we loaded
@@ -11,7 +11,9 @@ choice = st.sidebar.radio("go to",('home','ocr', 'match', 'action'))
 
 # finally get to whats on each page
 if choice == 'home':
+
     st.write("Home Page")
+    generate.app()
 elif choice == 'ocr':
     ocr.app()
 elif choice == 'match':

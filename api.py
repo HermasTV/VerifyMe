@@ -2,7 +2,7 @@ import uvicorn
 import secrets
 import numpy as np
 from cv2 import cv2
-from typing import List
+from typing import List,Optional
 
 from fastapi import FastAPI,Form,File,UploadFile,Depends
 from sqlalchemy.orm import Session
@@ -31,17 +31,18 @@ ocr = OCR()
 matcher = Matcher()
 smile = Smile()
 
-#postgres Database
-DATABASE_URL = 'postgresql'
+
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
 
 @app.post("/generate",response_model=schemas.UserCreate)
-async def generate(username:str, email:str, db: Session = Depends(get_db)):
+async def generate(username:str = Form(...),
+                email:str = Form(...),
+                db: Session = Depends(get_db)):
+
     token = secrets.token_urlsafe(10)
-    
     return crud.create_user(db=db,username=username,email=email,token=token)
 
 @app.get("/users",response_model=List[schemas.User])
@@ -55,7 +56,7 @@ async def get_user_by_token(token:str,db: Session = Depends(get_db)):
     return crud.get_user_by_token(db=db,token=token)
 
 @app.post("/ocr",response_model=schemas.User)
-async def id_ocr(token:str,
+async def id_ocr(token:str = Form(...),
                 id: UploadFile = File(...),
                 db: Session = Depends(get_db)):
 
@@ -76,7 +77,7 @@ async def id_ocr(token:str,
     return user
 
 @app.post("/match",response_model=schemas.UpdateMatch)
-async def match(token:str,
+async def match(token:str= Form(...),
                 id: UploadFile = File(...),
                 selfie: UploadFile = File(...),
                 db: Session = Depends(get_db)):
@@ -91,11 +92,11 @@ async def match(token:str,
     selfie_img = cv2.imdecode(selfie_arr, cv2.IMREAD_COLOR)
 
     result = matcher.match(id_card=id_img,selfie=selfie_img)[0]
- 
-    return crud.update_match(db=db,token=token,match=result)
+    user = crud.update_match(db=db,token=token,match=result)
+    return user
 
 @app.post("/action",response_model=schemas.UpdateAction)
-async def action(token:str,
+async def action(token:str = Form(...),
                  img: UploadFile = File(...),
                  db: Session = Depends(get_db)):
 

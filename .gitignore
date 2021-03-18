@@ -3,3 +3,4 @@ __pycache__/
 *.log
 api/OCR/logs/
 api/OCR/__pycache__/
+DataBase.db
