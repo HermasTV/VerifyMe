@@ -41,10 +41,13 @@ async def root():
 @app.post("/generate",response_model=schemas.UserCreate)
 async def generate(username:str = Form(...),
                 email:str = Form(...),
-                db: Session = Depends(get_db)):
+                db: Session = Depends(get_db),
+                connectDB:bool = False):
 
     token = secrets.token_urlsafe(10)
-    return crud.create_user(db=db,username=username,email=email,token=token)
+    if connectDB:
+        crud.create_user(db=db,username=username,email=email,token=token)
+    return token
 
 @app.get("/users",response_model=List[schemas.User])
 async def get_users(db: Session = Depends(get_db)):
@@ -59,7 +62,8 @@ async def get_user_by_token(token:str,db: Session = Depends(get_db)):
 @app.post("/ocr",response_model=schemas.User)
 async def id_ocr(token:str = Form(...),
                 id: UploadFile = File(...),
-                db: Session = Depends(get_db)):
+                db: Session = Depends(get_db),
+                connectDB:bool = False):
 
     #load the Image
     contents = await id.read()
@@ -69,19 +73,21 @@ async def id_ocr(token:str = Form(...),
 
     #pass pass to the OCR module
     result = ocr.recognize(img)
-    user = crud.update_ocr(db=db,token=token,
-                    first_name=result['name'],
-                    last_name=result['family_name'],
-                    address=result['address_line_one'],
-                    city=result['address_line_two'])
+    if connectDB: 
+        crud.update_ocr(db=db,token=token,
+                        first_name=result['name'],
+                        last_name=result['family_name'],
+                        address=result['address_line_one'],
+                        city=result['address_line_two'])
 
-    return user
+    return result
 
 @app.post("/match",response_model=schemas.UpdateMatch)
 async def match(token:str= Form(...),
                 id: UploadFile = File(...),
                 selfie: UploadFile = File(...),
-                db: Session = Depends(get_db)):
+                db: Session = Depends(get_db),
+                connectDB:bool = False):
 
     id_data = await id.read()
     selfie_data = await selfie.read()
@@ -93,21 +99,24 @@ async def match(token:str= Form(...),
     selfie_img = cv2.imdecode(selfie_arr, cv2.IMREAD_COLOR)
 
     result = matcher.match(id_card=id_img,selfie=selfie_img)[0]
-    user = crud.update_match(db=db,token=token,match=result)
-    return user
+    if connectDB:
+        crud.update_match(db=db,token=token,match=result)
+    return result
 
 @app.post("/action",response_model=schemas.UpdateAction)
 async def action(token:str = Form(...),
                  img: UploadFile = File(...),
-                 db: Session = Depends(get_db)):
+                 db: Session = Depends(get_db),
+                 connectDB:bool = False):
 
     img_data = await img.read()
     img_arr = np.fromstring(img_data, np.uint8)
     imgcv = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
 
     result = smile.detector(image=imgcv)
-
-    return crud.update_action(db=db,token=token,action=result)
+    if connectDB:
+        crud.update_action(db=db,token=token,action=result)
+    return result
 
 
 if __name__ == '__main__':
