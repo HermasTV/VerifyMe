@@ -6,10 +6,11 @@ logger.setLevel(0)
 def logresult(test):
 
     def wrapper():
-        print("entered wrapper")
+        print("Testing : "+test.__name__)
         res = test()
-        if res :
-            logger.error(test.__name__)
-        else :
-            logger.error("failed")
+        print(res)
+        # if res :
+        #     logger.error('')
+        # else :
+        #     logger.error("failed")
     return wrapper
