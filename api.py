@@ -1,7 +1,6 @@
 import uvicorn
 import secrets
 import numpy as np
-import pandas as pd
 from cv2 import cv2
 from traceback import print_exc
 from typing import List,Optional

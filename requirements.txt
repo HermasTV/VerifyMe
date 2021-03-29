@@ -8,3 +8,4 @@ uvicorn
 pymongo
 face_recognition
 easyocr
+sqlalchemy

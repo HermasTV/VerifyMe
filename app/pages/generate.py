@@ -12,6 +12,6 @@ def app():
                 'email':email,
                 'connectDB':True}
             
-            res = requests.post(f"http://localhost:8000/generate",data=req)
+            res = requests.post(f"http://api:8000/generate",data=req)
             token = res.json()
             st.write(token)

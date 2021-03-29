@@ -8,14 +8,14 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8501:8501
-    # depends_on:
-    #   - api
+    depends_on:
+      - api
     volumes: 
       - ./app:/app
   api:
     image: verifyme_api
-    build: api
+    build: .
     ports:
       - 8000:8000
     volumes: 
-      - ./api:/app
+      - .:/app

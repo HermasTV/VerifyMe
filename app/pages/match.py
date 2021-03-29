@@ -22,7 +22,7 @@ def app():
             files = {"id": img1.getvalue(),
                     "selfie":img2.getvalue()}
             #res = requests.post(f"http://api:8000/match", files=files)
-            res = requests.post(f"http://localhost:8000/match",data=data, files=files)
+            res = requests.post(f"http://api:8000/match",data=data, files=files)
             res = res.json()
             print(type(res))
             st.write(res)

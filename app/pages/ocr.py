@@ -18,7 +18,7 @@ def app(result=None):
             data = {'token':token,'connectDB':True}
             files = {"id": id_img.getvalue()}
             #res = requests.post(f"http://api:8000/match", files=files)
-            res = requests.post(f"http://localhost:8000/ocr",data=data,files=files)
+            res = requests.post(f"http://api:8000/ocr",data=data,files=files)
             res = res.json()
             print(type(res))
             st.write(res)
