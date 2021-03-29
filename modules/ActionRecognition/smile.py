@@ -15,8 +15,11 @@ class Smile():
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         # detect faces
         faces = face_locations(gray,0)
-        if len(faces) == 0 or len(faces)>1:
-            return False
+        if len(faces) == 0 :
+            raise ValueError(232)
+        elif len(faces)>1:
+            raise ValueError(233)
+        
         face = faces[0]
         top, right, bottom, left = face[0:4]
         # crop the face from the image
@@ -29,12 +32,10 @@ class Smile():
         if len(smiles) > 0 :
             return True
         else :
-            return False
+            raise ValueError(231)
 
     def detector(self,image):
 
         face = self._detect_face(image)
-        if face is False:
-            return False
         smile = self._smile_detector(face)
         return smile

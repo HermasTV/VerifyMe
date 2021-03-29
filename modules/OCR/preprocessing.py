@@ -11,13 +11,14 @@ class PreProcess :
         self.template = os.path.join(os.path.dirname(__file__),'utils/front.jpg')
 
     def crop_id(self,img):
+        
         img1 = cv2.imread(self.template,cv2.IMREAD_GRAYSCALE)
         img2 = img.copy()
         # Initiate SIFT detector
-        orb = cv2.SIFT_create()
-        # find the keypoints and descriptors with ORB
-        kp1, des1 = orb.detectAndCompute(img1,None)
-        kp2, des2 = orb.detectAndCompute(img2,None)
+        sift = cv2.SIFT_create()
+        # find the keypoints and descriptors with SIFT
+        kp1, des1 = sift.detectAndCompute(img1,None)
+        kp2, des2 = sift.detectAndCompute(img2,None)
         # create BFMatcher object
         bf = cv2.BFMatcher()
         # Match descriptors.
@@ -32,16 +33,14 @@ class PreProcess :
             src_pts = np.float32([ kp1[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
             dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
 
-            M, mask = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
-            matchesMask = mask.ravel().tolist()
-            print(img1.shape)
+            M, _ = cv2.findHomography(src_pts, dst_pts, cv2.RANSAC,5.0)
             h,w = img1.shape
             pts = np.float32([ [0,0],[0,h-1],[w-1,h-1],[w-1,0] ]).reshape(-1,1,2)
             dst = cv2.perspectiveTransform(pts,M)
 
         else:
-            print("Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT) )
-            matchesMask = None
+            print('No ID')
+            raise ValueError(201)
 
         width,height = 603,371
         pts2 = np.float32([[0,0],[width,0],[0,height],[width,height]])
@@ -75,9 +74,6 @@ class PreProcess :
         card_f = front
         card_f = cv2.resize(card_f, (scaled_w, scaled_h))
 
-        face = card_f[int(0.06 * card_f.shape[0]): int(0.5 * card_f.shape[0]),
-                    int(0.03 * card_f.shape[1]): int(0.27 * card_f.shape[1])]
-
         first_name = card_f[int(0.26 * card_f.shape[0]): int(0.36 * card_f.shape[0]),
                     int(0.6 * card_f.shape[1]): card_f.shape[1] - 10]
 
@@ -90,19 +86,10 @@ class PreProcess :
         address_line2 = card_f[int(0.57 * card_f.shape[0]): int(0.67 * card_f.shape[0]),
                         int(0.37 * card_f.shape[1]): card_f.shape[1] - 10]
 
-        id_num = card_f[int(0.76 * card_f.shape[0]): int(0.9 * card_f.shape[0]),
-                        int(0.42 * card_f.shape[1]): card_f.shape[1] - 10]
-
-        serial = card_f[int(0.9 * card_f.shape[0]): card_f.shape[0] - 10,
-                        int(0.05 * card_f.shape[1]): int(0.4 *card_f.shape[1] - 10)]
-
-        # cv2.imwrite('logs/face.jpg',face)
         # cv2.imwrite('logs/first_name.jpg',first_name)
         # cv2.imwrite('logs/last_name.jpg',last_name)
         # cv2.imwrite('logs/address_line1.jpg',address_line1)
         # cv2.imwrite('logs/address_line2.jpg',address_line2)
-        # cv2.imwrite('logs/id_num.jpg',id_num)
-        # cv2.imwrite('logs/serial.jpg',serial)
 
         return dict(name = first_name,
                     family_name = last_name,

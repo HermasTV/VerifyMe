@@ -15,7 +15,7 @@ def app(result=None):
 
     if st.button("ocr"):
         if id_img is not None:
-            data = {'token':token}
+            data = {'token':token,'connectDB':True}
             files = {"id": id_img.getvalue()}
             #res = requests.post(f"http://api:8000/match", files=files)
             res = requests.post(f"http://localhost:8000/ocr",data=data,files=files)

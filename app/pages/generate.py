@@ -9,10 +9,9 @@ def app():
             
             req={
                 'username':username,
-                'email':email}
+                'email':email,
+                'connectDB':True}
             
             res = requests.post(f"http://localhost:8000/generate",data=req)
-            res = res.json()
-            token = res['token']
-            print(token)
+            token = res.json()
             st.write(token)

@@ -12,10 +12,10 @@ services:
     #   - api
     volumes: 
       - ./app:/app
-  # api:
-  #   image: verifyme_api
-  #   build: api
-  #   ports:
-  #     - 8000:8000
-  #   volumes: 
-  #     - ./api:/app
+  api:
+    image: verifyme_api
+    build: api
+    ports:
+      - 8000:8000
+    volumes: 
+      - ./api:/app

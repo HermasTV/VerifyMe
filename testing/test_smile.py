@@ -58,7 +58,7 @@ def test_action_with_multiple_faces():
         return False
 
 
-test_action_with_smile()
-test_action_with_no_smile()
-test_action_with_no_face()
-test_action_with_multiple_faces()
+# test_action_with_smile()
+# test_action_with_no_smile()
+# test_action_with_no_face()
+# test_action_with_multiple_faces()

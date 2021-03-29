@@ -3,10 +3,12 @@ import secrets
 import numpy as np
 import pandas as pd
 from cv2 import cv2
+from traceback import print_exc
 from typing import List,Optional
 
-from fastapi import FastAPI,Form,File,UploadFile,Depends
+from fastapi import FastAPI,Form,File,UploadFile,Depends,HTTPException
 from sqlalchemy.orm import Session
+from utils.errors import *
 from modules.OCR.ocr import OCR
 from modules.FaceMatch.match import Matcher
 from modules.ActionRecognition.smile import Smile
@@ -19,7 +21,7 @@ models.Base.metadata.create_all(bind=engine)
 #initialize fastapi instance 
 app = FastAPI()
 
-# Dependency
+# database loading
 def get_db():
     db = SessionLocal()
     try:
@@ -36,18 +38,19 @@ smile = Smile()
 
 @app.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Welcome to VerifyMe"}
 
-@app.post("/generate",response_model=schemas.UserCreate)
+@app.post("/generate")
 async def generate(username:str = Form(...),
                 email:str = Form(...),
-                db: Session = Depends(get_db),
-                connectDB:bool = False):
+                connectDB:bool = Form(...),
+                db: Session = Depends(get_db)):
 
     token = secrets.token_urlsafe(10)
+    print(connectDB)
     if connectDB:
         crud.create_user(db=db,username=username,email=email,token=token)
-    return token
+    return {'token':token}
 
 @app.get("/users",response_model=List[schemas.User])
 async def get_users(db: Session = Depends(get_db)):
@@ -59,7 +62,7 @@ async def get_user_by_token(token:str,db: Session = Depends(get_db)):
     
     return crud.get_user_by_token(db=db,token=token)
 
-@app.post("/ocr",response_model=schemas.User)
+@app.post("/ocr")
 async def id_ocr(token:str = Form(...),
                 id: UploadFile = File(...),
                 db: Session = Depends(get_db),
@@ -69,10 +72,16 @@ async def id_ocr(token:str = Form(...),
     contents = await id.read()
     nparr = np.fromstring(contents, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    #img_dimensions = str(img.shape)
-
     #pass pass to the OCR module
-    result = ocr.recognize(img)
+    try :
+        result = ocr.recognize(img)
+
+    except Exception as e :
+        err = int(str(e))
+        raise HTTPException(
+            status_code=err,
+            detail=errors[err])
+        
     if connectDB: 
         crud.update_ocr(db=db,token=token,
                         first_name=result['name'],
@@ -82,38 +91,62 @@ async def id_ocr(token:str = Form(...),
 
     return result
 
-@app.post("/match",response_model=schemas.UpdateMatch)
-async def match(token:str= Form(...),
-                id: UploadFile = File(...),
-                selfie: UploadFile = File(...),
-                db: Session = Depends(get_db),
-                connectDB:bool = False):
-
-    id_data = await id.read()
-    selfie_data = await selfie.read()
-
-    id_arr = np.fromstring(id_data, np.uint8)
-    selfie_arr = np.fromstring(selfie_data, np.uint8)
-
-    id_img = cv2.imdecode(id_arr, cv2.IMREAD_COLOR)
-    selfie_img = cv2.imdecode(selfie_arr, cv2.IMREAD_COLOR)
-
-    result = matcher.match(id_card=id_img,selfie=selfie_img)[0]
+@app.post("/match")
+async def match(token:str= Form(...),id: UploadFile = File(...),
+                selfie: UploadFile = File(...),connectDB:bool = Form(...),
+                db: Session = Depends(get_db)):
+    try :
+        #load images 
+        id_data = await id.read()
+        selfie_data = await selfie.read()
+        #conver them as arrays 
+        id_arr = np.fromstring(id_data, np.uint8)
+        selfie_arr = np.fromstring(selfie_data, np.uint8)
+        #convert images to cv BGR images 
+        id_img = cv2.imdecode(id_arr, cv2.IMREAD_COLOR)
+        selfie_img = cv2.imdecode(selfie_arr, cv2.IMREAD_COLOR)
+        #pass the images to mach module
+        result = matcher.match(id_card=id_img,selfie=selfie_img)
+    #one of the pre difined errors happened 
+    except ValueError as v :
+        err = int(str(v))
+        raise HTTPException(
+            status_code=err,
+            detail=errors[err])
+    #general exception
+    except Exception as e :
+        err = int(str(e))
+        raise HTTPException(
+            status_code=err,
+            detail="General System Error")
+    
     if connectDB:
         crud.update_match(db=db,token=token,match=result)
-    return result
 
-@app.post("/action",response_model=schemas.UpdateAction)
+    return str(result)
+
+@app.post("/action")
 async def action(token:str = Form(...),
                  img: UploadFile = File(...),
-                 db: Session = Depends(get_db),
-                 connectDB:bool = False):
+                 connectDB:bool = Form(...),
+                 db: Session = Depends(get_db)):
 
     img_data = await img.read()
     img_arr = np.fromstring(img_data, np.uint8)
     imgcv = cv2.imdecode(img_arr, cv2.IMREAD_COLOR)
+    try :
+        result = smile.detector(image=imgcv)
+    except ValueError as v :
+        err = int(str(v))
+        raise HTTPException(
+            status_code=err,
+            detail=errors[err])
+    except Exception as e :
+        print_exc()
+        raise HTTPException(
+            status_code=e,
+            detail="General System Error")
 
-    result = smile.detector(image=imgcv)
     if connectDB:
         crud.update_action(db=db,token=token,action=result)
     return result

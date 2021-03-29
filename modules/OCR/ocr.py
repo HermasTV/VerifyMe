@@ -10,22 +10,21 @@ class OCR :
         self.processor = PreProcess()
         self.output = {}
     def recognize(self,data):
-        try:
 
-            cropped = self.processor.crop_id(data)
-            fields = self.processor.extract(cropped)
-            for key,value in fields.items():
-                result = self.reader.readtext(value,detail=0,
-                            contrast_ths=0.4,
-                            paragraph=True,mag_ratio=1.5,
-                            text_threshold=0.5)
-                #results.reverse()
-                #text = ' '.join(results)
-                self.output[key] = result[0]
+        
+        cropped = self.processor.crop_id(data)
+        fields = self.processor.extract(cropped)
+        for key,value in fields.items():
+            result = self.reader.readtext(value,detail=0,
+                        contrast_ths=0.4,
+                        paragraph=True,mag_ratio=1.5,
+                        text_threshold=0.5)
+            if result[0] == '':
+                raise ValueError(202)
+            self.output[key] = result[0]
 
-            return self.output
-        except Exception as e :
-            print_exc()
+        return self.output
+        
         
         
 

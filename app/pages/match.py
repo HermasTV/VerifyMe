@@ -18,7 +18,7 @@ def app():
     # displays a button
     if st.button("match"):
         if img1 is not None and img2 is not None:
-            data = {'token':token}
+            data = {'token':token,'connectDB':True}
             files = {"id": img1.getvalue(),
                     "selfie":img2.getvalue()}
             #res = requests.post(f"http://api:8000/match", files=files)

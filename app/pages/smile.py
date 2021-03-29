@@ -15,7 +15,7 @@ def app(result=None):
 
     if st.button("detect"):
         if img is not None:
-            data = {'token':token}
+            data = {'token':token,'connectDB':True}
             files = {"img": img.getvalue()}
             #res = requests.post(f"http://api:8000/match", files=files) #for the docker version
             res = requests.post(f"http://localhost:8000/action",data=data, files=files)
